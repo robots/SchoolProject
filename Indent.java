@@ -96,6 +96,10 @@ class Token implements Cloneable
 /** Zajistuje spravne odsazovani. */
 public class Indent
 {
+    private static final String NEWLINE = "\n";
+    private static final String KLASS_WHITESPACE = "whitespace";
+    private static final String KLASS_COMMENT = "comment";
+
 
   /**
    * Vrati <code>1</code> nebo <code>0</code> podle toho, jestli je dany druh odsazeni
