@@ -184,8 +184,8 @@ public class Indent
     {
       IndentLvl indent;
 
-      odsazeni = new IndentLvl(klass);
-      push(odsazeni);
+      indent = new IndentLvl(klass);
+      push(indent);
     }
 
     /** Odsadi zpatky. */
@@ -197,10 +197,11 @@ public class Indent
     /** Odsadi zpatky, ale nesnizi pritom <code>minLevel</code>. */
     public void unindentNext()
     {
+      int tmpMin;
 
-      m = minLevel;
+      tmpMin = minLevel;
       pop();
-      minLevel = m;
+      minLevel = tmpMin;
     }
 
     /**
