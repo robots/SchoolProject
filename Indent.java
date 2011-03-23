@@ -35,32 +35,12 @@ class Token implements Cloneable
   public Token prev;
   /** Odkaz na nasledujici token ve spojaku. */
   public Token next;
-
-     
-  /**
-   * Odpovida token dane tride a textu?
-   * 
-   * @param aClass trida
-   * @param aText text
-   * @return <code>true</code> pokud token odpovida dane tride a textu;
-   *         <code>false</code> pokud token neodpovida dane tride a textu 
-   */  
-  boolean match(String aClass, String aText) {
-    return klass.equals(aClass) &&
-           text.equalsIgnoreCase(aText);
-  }
-  
-  /**
-   * Vytvori klon objektu.
-   *
-   * @return klon objektu
-   */
-  public Object clone() {
-    return new Token(text, klass, flags, row, col, null, null);
-  }
-  
-
-
+  /** Text. */
+  public String text;
+  /** Trida. */
+  public String klass;
+  /** Vlajky. */
+ 
   /**
    * Vytvori token podle zadanych parametru.
    * 
