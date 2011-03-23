@@ -405,7 +405,8 @@ public class Indent
    * 
    * @param tokens spojovy seznam tokenu, kde se maji najit a odsadit komentare
    */
-  static void indentComments(Token tokens) {
+  static void indentComments(Token tokens)
+  {
     Token token, t, first;
     
 
