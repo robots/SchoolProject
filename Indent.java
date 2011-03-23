@@ -62,17 +62,31 @@ class Token implements Cloneable
     this.prev  = prev;
     this.next  = next;  
   }
+
+  /**
+   * Odpovida token dane tride a textu?
+   * 
+   * @param aClass trida
+   * @param aText text
+   * @return <code>true</code> pokud token odpovida dane tride a textu;
+   *         <code>false</code> pokud token neodpovida dane tride a textu 
+   */  
   boolean match(String aClass, String aText)
   {
+    return klass.equals(aClass) && text.equalsIgnoreCase(aText);
+  }
   
-  /** Text. */
-  public String text;
-  /** Trida. */
-  public String klass;
-  /** Vlajky. */
- 
+  /**
+   * Vytvori klon objektu.
+   *
+   * @return klon objektu
+   */
   public Object clone()
+  {
+    return new Token(text, klass, flags, row, col, null, null);
+  }
 }
+
 /** Zajistuje spravne odsazovani. */
 public class Indent
 {
@@ -88,10 +102,10 @@ public class Indent
    * Vracena hodnota je ve volajici funkci pouzita jako koeficint, coz ma efektivne za 
    * nasledek, ze se virtualni druh odsazovani fyzicky neodsazuje.
    *   
-	 * @param klass druh odsazeni
-	 * @return <code>1</code> pokud je druh odsazeni realny;
+   * @param klass druh odsazeni
+   * @return <code>1</code> pokud je druh odsazeni realny;
    *         <code>0</code> pokud je druh odsazeni virtualni
-	 */
+   */
 	private static int indentLevel(String klass) {
     return klass != "virtual-round-bracket" ? 1 : 0;
   }
