@@ -141,19 +141,22 @@ public class Indent
      *
      * @return odebrana polozka 
      */
-
-      if (top != null) {
-        r = top;
-        top = top.next;
-        currLevel -= indentLevel(r.klass) * 4;
-        if (minLevel > currLevel)
-          minLevel = currLevel;
-        return r;
-      } else {
-        return null;
     public IndentLvl pop()
     {
+      IndentLvl poped;
+
+      if (top == null) {
+      	return null;
       }
+
+      poped = top;
+      top = top.next;
+      currLevel -= indentLevel(poped.klass) * 4;
+
+      if (minLevel > currLevel)
+        minLevel = currLevel;
+
+      return poped;
     }
 
     /**
@@ -224,11 +227,17 @@ public class Indent
    */
   private static Token skipWhitespaceAndComments(Token start) {
     Token t;
-    for (
-      t = start.next;
-      t != null && (t.klass.equals("whitespace") || t.klass.equals("comment"));
-      t = t.next
-    );return t;
+    
+    t = start.next;
+
+    while (t != null) {
+      if (!t.klass.equals(KLASS_WHITESPACE) && !t.klass.equals(KLASS_COMMENT))
+        break;
+
+      t = t.next;
+    }
+    
+    return t;
   } 
 
   /**
@@ -243,15 +252,18 @@ public class Indent
    * @return nejblizsi token za <code>token</code> (vcetne) se tridou <code>klass</code>
    *          a textem <code>text</code>; <code>null</code> pokud takovy uz ve spojaku neni 
    */
-  private static Token skipUntil(Token token, String klass, String text) {
-    Token t;
-    for (
-      t = token;
-      t != null && 
-           (t.klass != klass || 
-	    !t.text.equalsIgnoreCase(text));
-      t = t.next
-    );return t;
+  private static Token skipUntil(Token token, String klass, String text)
+  {
+    Token t = token;
+
+    while (t != null) {
+      if (t.klass == klass && t.text.equalsIgnoreCase(text))
+        break;
+
+      t = t.next;
+    }
+
+    return t;
   }
 
   /** 
@@ -263,10 +275,14 @@ public class Indent
    */
   static void changeColUntilEOL(Token start, int delta)
   {
-    Token token;
+    Token t = start;
 
-    for (token = start; token != null && token.row == start.row; token = token.next) {
-      token.col += delta;
+    while (t != null) {
+      if (t.row != start.row)
+        break;
+
+      t.col += delta;
+      t = t.next;
     }
   }
 
@@ -279,9 +295,11 @@ public class Indent
    */
   static void changeRowUntilEOF(int delta, Token start)
   {
+    Token token = start;
 
-    for (token = start; token != null; token = token.next) {
+    while (token != null) {
       token.row += delta;
+      token = token.next;
     }
   }
   
@@ -292,12 +310,17 @@ public class Indent
    */
 	private static void ensureBlankLineAfter(Token token)
 	{
+		if (token.next == null) 
+			return;
+		while (token != null) {
+			if ((token.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE)
+				break;
+
+			token = token.next;
+		}
 
 	int step;
 
-    if (token.next != null) {
-      for (; token != null && (token.flags & Token.TF_ENDS_LINE) != Token.TF_ENDS_LINE; token = token.next)
-        ;
 
       int hlpr = 0;
       if (token != null && token.next != null ) {
