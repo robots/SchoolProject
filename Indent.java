@@ -166,10 +166,11 @@ public class Indent
      */
     public void push(IndentLvl indent)
     {
+      indent.next = null;
+
       if (top != null)
         indent.next = top;
-      else
-        indent.next = null;
+
       top = indent;
       currLevel += indentLevel(indent.klass) * 4;
     }
