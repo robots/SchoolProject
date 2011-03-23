@@ -408,17 +408,16 @@ public class Indent
   static void indentComments(Token tokens)
   {
     Token token, t, first;
-    
 
     for (token = tokens; token != null; token = token.next)
-      if (token.klass.equals("comment")) {
+      if (token.klass.equals(KLASS_COMMENT)) {
 
         /* Nejdrive zjistime, zda je komentar standalone */
         boolean isStandalone = true;
         first = token;
         if ((token.flags & Token.TF_BEGINS_LINE) != Token.TF_BEGINS_LINE) {
           for (t = token.prev; t != null; t = t.prev)
-            if (!t.klass.equals("whitespace")) {
+            if (!t.klass.equals(KLASS_WHITESPACE)) {
               isStandalone = false;
               break;
             } else {
@@ -431,7 +430,7 @@ public class Indent
         if (!isStandalone) continue;
 
         /* Ted najdeme neco, k cemu by se mohl tento komentar vztahovat. */
-        for (t = token.next; t != null && (t.klass.equals("comment") || t.klass.equals("whitespace")); t = t.next)
+        for (t = token.next; t != null && (t.klass.equals(KLASS_COMMENT) || t.klass.equals(KLASS_WHITESPACE)); t = t.next)
           ;
 
         if (t == null || t.match("reserved-word", "end")
@@ -440,5 +439,4 @@ public class Indent
         indentLine(first, t.col);
       }
   }  
-
 }
