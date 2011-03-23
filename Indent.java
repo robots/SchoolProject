@@ -331,43 +331,18 @@ public class Indent
 			token = token.next;
 		}
 
-	int step;
+		if (token == null || token.next == null)
+			return;
 
+		if ((token.next.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE)
+			return;
 
-      int hlpr = 0;
-      if (token != null && token.next != null ) {
-  		  hlpr= token.next.flags;
-  	}
-      
-	step = 1;
-      while (   step < 4) {
-    	  
-    	  if (token != null && token.next != null ) {
-    		  token.flags = token.flags & (token.next.flags ^ (~hlpr));
-    	  }
-    	  
-	switch (step) {
-	  case 1:
-	    if (token == null || token.next == null) { return; } 
-	    if ((token.next.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE) return;
-	    break;
+		Token newToken = new Token(NEWLINE, KLASS_WHITESPACE, token.next.flags, token.next.row, 0, token, token.next);
 
-	  case 2:
-	    newToken = new Token("\n", "whitespace",
-	      ((token.next.flags & ~Token.TF_BEGINS_LINE) & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE | Token.TF_ENDS_LINE,
-	      token.next.row, 0, token, token.next);
-            break;
-
-	  case 3:
-	    changeRowUntilEOF(1, token.next);
-	    token.next.prev = newToken;
-	    token.next = newToken;
-	    break;
+		changeRowUntilEOF(1, token.next);
+		token.next.prev = newToken;
+		token.next = newToken;
 	}
-	step++;
-      }
-    }
-  }
   
   /**
    * Odsadi radek zacinajici tokenem <code>start</code> na uroven <code>level</code>.
