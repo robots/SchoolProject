@@ -1,5 +1,6 @@
 /** Objekt tokenu. */
-class Token implements Cloneable {
+class Token implements Cloneable
+{
 
   /* Vlajky tokenu. TF = Token Flag. */
 
@@ -71,7 +72,8 @@ class Token implements Cloneable {
    * @param prev odkaz na predchozi token ve spojaku
    * @param next odkaz na nasledujici token ve spojaku
    */
-  public Token(String text, String klass, int flags, int row, int col, Token prev, Token next) {
+  public Token(String text, String klass, int flags, int row, int col, Token prev, Token next)
+  {
     this.text  = text;
     this.klass = klass;
     this.flags = flags;
@@ -80,6 +82,8 @@ class Token implements Cloneable {
     this.prev  = prev;
     this.next  = next;  
   }
+  boolean match(String aClass, String aText)
+  {
   
   /** Text. */
   public String text;
@@ -87,9 +91,11 @@ class Token implements Cloneable {
   public String klass;
   /** Vlajky. */
  
+  public Object clone()
 }
 /** Zajistuje spravne odsazovani. */
-public class Indent {
+public class Indent
+{
 
   /**
    * Vrati <code>1</code> nebo <code>0</code> podle toho, jestli je dany druh odsazeni
@@ -107,20 +113,22 @@ public class Indent {
   }
  
   /** Trida popisujici jednu uroven odsazeni. Slouzi jako jedna polozka v zasobniku odsazeni. */
-  private static final class IndentLvl {
+  private static final class IndentLvl
+  {
     /** Druh odsazeni. */ 
     public String klass;
     /** Ukazatel na dalsi polozku zasobniku, */ 
     public IndentLvl next;       
     
     IndentLvl(String klass)
-      {
+    {
       this.klass = klass;
-      }
+    }
   }
   
   /** Trida popisujici aktualni stav odsazovani v prubehu algoritmu. */
-  private final static class IndentContext {
+  private final static class IndentContext
+  {
     /** Zasobnik <code>Indent</code>u. */
     public IndentLvl top;
     /** Aktualni uroven odsazeni. */     
@@ -133,8 +141,6 @@ public class Indent {
      *
      * @return odebrana polozka 
      */
-    public IndentLvl pop() {
-      IndentLvl r;
 
       if (top != null) {
         r = top;
@@ -145,6 +151,8 @@ public class Indent {
         return r;
       } else {
         return null;
+    public IndentLvl pop()
+    {
       }
     }
 
@@ -153,7 +161,8 @@ public class Indent {
      * 
      * @param indent pridavana polozka
      */
-    public void push(IndentLvl indent) {
+    public void push(IndentLvl indent)
+    {
       if (top != null)
         indent.next = top;
       else
@@ -167,21 +176,23 @@ public class Indent {
      * 
      * @param klass druh odsazeni
      */
-    public void indent(String klass) {
-      IndentLvl odsazeni;
+    public void indent(String klass)
+    {
+      IndentLvl indent;
 
       odsazeni = new IndentLvl(klass);
       push(odsazeni);
     }
 
     /** Odsadi zpatky. */
-    public void unindent() {
+    public void unindent()
+    {
       pop();
     }
 
     /** Odsadi zpatky, ale nesnizi pritom <code>minLevel</code>. */
-    public void unindentNext() {
-      int m;
+    public void unindentNext()
+    {
 
       m = minLevel;
       pop();
@@ -250,7 +261,8 @@ public class Indent {
    * @param start prni token, kde se ma menit hodnota <code>col</code>
    * @param delta o kolik se ma zmenit hodnota <code>col</code>
    */
-  static void changeColUntilEOL(Token start, int delta) {
+  static void changeColUntilEOL(Token start, int delta)
+  {
     Token token;
 
     for (token = start; token != null && token.row == start.row; token = token.next) {
@@ -265,8 +277,8 @@ public class Indent {
    * @param start prni token, kde se ma menit hodnota <code>row</code>
    * @param delta o kolik se ma zmenit hodnota <code>row</code>
    */
-  static void changeRowUntilEOF(int delta, Token start) {
-    Token token;
+  static void changeRowUntilEOF(int delta, Token start)
+  {
 
     for (token = start; token != null; token = token.next) {
       token.row += delta;
@@ -278,9 +290,8 @@ public class Indent {
    *  
    * @param token token, za kterym ma byt prazdna radka
    */
-  private static void ensureBlankLineAfter(Token token) {
-    Token newToken = null;
-    
+	private static void ensureBlankLineAfter(Token token)
+	{
 
 	int step;
 
