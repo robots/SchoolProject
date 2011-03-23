@@ -213,9 +213,15 @@ public class Indent
      *          <code>false</code> pokud je zasobnik prazdny nebo je druh odsazeni na jeho vrcholu
      *          jiny nez <code>klass</code>
      */
-    public boolean topClassIs(String klass) {
-      return top == null ? 
-          false : top.klass == klass ? true : false;
+    public boolean topClassIs(String klass)
+    {
+      if (top == null)
+        return false;
+
+      if (top.klass == klass) 
+        return true;
+
+      return false;
     }
   };
   
