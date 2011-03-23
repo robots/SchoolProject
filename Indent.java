@@ -351,52 +351,54 @@ public class Indent
    * @param l uroven, na kterou ma byt tato radka odsazena
    * @return token, kterym radka zacina po odsazeni (neni nutne stejny jako <code>start</code>)
    */
-  private static Token indentLine(Token start, int l) {
-    Token newToken, result;
-    String text;
-    int delta = 0;
+	private static Token indentLine(Token start, int l)
+	{
+		Token newToken, result;
+		String text;
+		int delta = 0;
 
-    result = start;
+		result = start;
 
-    if (start.klass.equals("whitespace")) {
-      if ((start.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE) {
-        /* nic nedelej, uz mame hotovo */
-      } else {
-        if (start.text.length() == l) {
-          /* nic nedelej, uz mame hotovo */
-        } else if (l > 0) {
-          delta = l - start.text.length();
-          start.text = "";
-          for (int i = 1; i <= l; i++)
-            start.text += " "; 
-          changeColUntilEOL(start.next, delta);
-        } else {
-          /*delta = -start.col;*/
-          delta = -(int)start.text.length();
-          if (start.prev != null) start.prev.next = start.next;
-          if (start.next != null) start.next.prev = start.prev;
-          start.next.flags |= Token.TF_BEGINS_LINE;
-          changeColUntilEOL(start.next, delta);
-          result = start.next;
-        }
-      }
-    } else if (l > 0) {
-      text = "";
-      for (int i = 1; i <= l; i++)
-        text += ' ';
-      newToken = new Token(text, "whitespace",
-        ((start.flags & ~Token.TF_BEGINS_LINE) & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE,
-        start.row, start.col, start.prev, start);
-      changeColUntilEOL(start, l);
-      if (start.prev != null) start.prev.next = newToken;
-      start.prev = newToken;
-      start.flags &= ~Token.TF_BEGINS_LINE;
-    } else {
-      /* nic nedelej, uz mame hotovo */
-    }
+		if (start.klass.equals(KLASS_WHITESPACE)) {
+			if ((start.flags & Token.TF_ENDS_LINE) != Token.TF_ENDS_LINE) {
+				if (start.text.length() != l) {
+					if (l > 0) {
+						delta = l - start.text.length();
+						start.text = "";
 
-    return result;
-  }
+						for (int i = 1; i <= l; i++)
+							start.text += " "; 
+
+						changeColUntilEOL(start.next, delta);
+					} else {
+						delta = -(int)start.text.length();
+
+						if (start.prev != null)
+							start.prev.next = start.next;
+
+						if (start.next != null)
+							start.next.prev = start.prev;
+						start.next.flags |= Token.TF_BEGINS_LINE;
+						changeColUntilEOL(start.next, delta);
+						result = start.next;
+					}
+				}
+			}
+		} else if (l > 0) {
+			text = "";
+			for (int i = 1; i <= l; i++)
+				text += ' ';
+			int flags = (start.flags & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE; 
+			newToken = new Token(text, KLASS_WHITESPACE, flags, start.row, start.col, start.prev, start);
+			changeColUntilEOL(start, l);
+			if (start.prev != null)
+				start.prev.next = newToken;
+			start.prev = newToken;
+			start.flags &= ~Token.TF_BEGINS_LINE;
+		}
+
+		return result;
+	}
 
   /** 
    * Odsadi urcite typy komentaru podle toho, k cemu patri.
