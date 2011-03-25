@@ -90,9 +90,11 @@ class Token implements Cloneable
 /** Zajistuje spravne odsazovani. */
 public class Indent
 {
-    private static final String NEWLINE = "\n";
-    private static final String KLASS_WHITESPACE = "whitespace";
-    private static final String KLASS_COMMENT = "comment";
+    public static final String NEWLINE = "\n";
+    public static final String KLASS_WHITESPACE = "whitespace";
+    public static final String KLASS_COMMENT = "comment";
+    public static final String KLASS_RESERVED_WORD = "reserved-word";
+    public static final String KLASS_VIRTUAL_ROUND_BRACKET = "virtual-round-bracket";
 
 
   /**
@@ -107,7 +109,7 @@ public class Indent
    *         <code>0</code> pokud je druh odsazeni virtualni
    */
 	private static int indentLevel(String klass) {
-    return klass != "virtual-round-bracket" ? 1 : 0;
+    return klass.equals(KLASS_VIRTUAL_ROUND_BRACKET) ? 1 : 0;
   }
  
   /** Trida popisujici jednu uroven odsazeni. Slouzi jako jedna polozka v zasobniku odsazeni. */
@@ -427,8 +429,8 @@ public class Indent
         for (t = token.next; t != null && (t.klass.equals(KLASS_COMMENT) || t.klass.equals(KLASS_WHITESPACE)); t = t.next)
           ;
 
-        if (t == null || t.match("reserved-word", "end")
-          || t.match("reserved-word", "until")) continue;
+        if (t == null || t.match(KLASS_RESERVED_WORD, "end")
+          || t.match(KLASS_RESERVED_WORD, "until")) continue;
 
         indentLine(first, t.col);
       }
