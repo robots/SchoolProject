@@ -81,6 +81,19 @@ class Token implements Cloneable {
   public Object clone() {
     return new Token(text, klass, flags, row, col, null, null);
   }
+
+  public boolean isSameKlassAs(String desiredKlass) {
+      return this.klass.equals(desiredKlass);
+  }
+
+  public boolean hasFlag(int flag) {
+    if( (this.flags & flag) == flag)
+            return true;
+    
+    return false;
+  }
+
+
 }
 
 /** Zajistuje spravne odsazovani. */
