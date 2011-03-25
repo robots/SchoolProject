@@ -210,24 +210,30 @@ public class Indent {
     * @param token token, za kterym ma byt prazdna radka
     */
     private static void ensureBlankLineAfter(Token token) {
-        if (token.next == null)
-            return;
-        while (token != null) {
-            if ((token.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE)
-                break;
-
-            token = token.next;
-        }
-
         if (token == null || token.next == null)
             return;
 
-        if ((token.next.flags & Token.TF_ENDS_LINE) == Token.TF_ENDS_LINE)
+        // Najdeme konec radky
+        while ( !(token == null) && (!token.hasFlag(Token.TF_ENDS_LINE))) {
+            token = token.next;
+        }
+
+        // Pokud dal uz nejsou zadne tokeny, koncime
+        if ((token == null) || (token.next == null))
             return;
 
-        Token newToken = new Token(NEWLINE, KLASS_WHITESPACE, token.next.flags, token.next.row, 0, token, token.next);
+        // Pokud je dal prazdna radka, koncime
+        if (token.next.hasFlag(Token.TF_ENDS_LINE))
+            return;
 
-        changeRowUntilEOF(1, token.next);
+        /* Zajistime, ze token je zacatkem i koncem radku.
+         * Flag Token.TF_ENDS_LINE by se pridavat nemusel,
+         * protoze v token.nex.flags urcite je. Ale pro prehlednost to neuskodi.
+         */
+        int newTokenFlags = token.next.flags | Token.TF_BEGINS_LINE | Token.TF_ENDS_LINE;
+        Token newToken = new Token(NEWLINE, KLASS_WHITESPACE, newTokenFlags, token.next.row, 0, token, token.next);
+
+        changeRowUntilEOF(token.next, 1);
         token.next.prev = newToken;
         token.next = newToken;
     }
