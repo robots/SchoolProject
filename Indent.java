@@ -218,7 +218,7 @@ public class Indent
       if (top == null)
         return false;
 
-      if (top.klass == klass) 
+      if (top.klass.equals(klass))
         return true;
 
       return false;
@@ -265,7 +265,7 @@ public class Indent
     Token t = token;
 
     while (t != null) {
-      if (t.klass == klass && t.text.equalsIgnoreCase(text))
+      if (t.klass.equals(klass) && t.text.equalsIgnoreCase(text))
         break;
 
       t = t.next;
