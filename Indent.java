@@ -67,12 +67,14 @@ class Token implements Cloneable {
    * @param aClass trida
    * @param aText text
    * @return <code>true</code> pokud token odpovida dane tride a textu;
-   *         <code>false</code> pokud token neodpovida dane tride a textu 
-   */  
-  boolean match(String aClass, String aText) {
-    return klass.equals(aClass) && text.equalsIgnoreCase(aText);
-  }
-  
+   *         <code>false</code> pokud token neodpovida dane tride a textu
+   */
+    boolean match(String desiredKlass, String desiredText) {
+        boolean matchTexts = text.equalsIgnoreCase(desiredText);
+
+        return isSameKlassAs(desiredKlass) && matchTexts;
+    }
+
   /**
    * Vytvori klon objektu.
    *
@@ -128,19 +130,22 @@ public class Indent {
    * @return nejblizsi token za <code>start</code>, ktery neni bila mezera ani komentar;
    *          <code>null</code> pokud takovy uz ve spojaku neni 
    */
-    private static Token skipWhitespaceAndComments(Token start) {
-        Token t;
-    
-        t = start.next;
+    private static Token skipWhitespaceAndComments(Token skipFrom) {
+        Token currToken = skipFrom.next;
 
-        while (t != null) {
-            if (!t.klass.equals(KLASS_WHITESPACE) && !t.klass.equals(KLASS_COMMENT))
+        if(currToken == null)
+               return null;
+
+        while ( currToken.isSameKlassAs(KLASS_WHITESPACE)
+                || currToken.isSameKlassAs(KLASS_COMMENT)) {
+            
+            currToken = currToken.next;
+
+            if(currToken == null)
                 break;
-
-            t = t.next;
         }
     
-        return t;
+        return currToken;
     }
 
     /**
@@ -155,17 +160,16 @@ public class Indent {
     * @return nejblizsi token za <code>token</code> (vcetne) se tridou <code>klass</code>
     *          a textem <code>text</code>; <code>null</code> pokud takovy uz ve spojaku neni
     */
-    private static Token skipUntil(Token token, String klass, String text) {
-        Token t = token;
+    private static Token skipUntil(Token skipFrom, String desiredKlass, String desiredText) {
+        Token currToken = skipFrom;
 
-        while (t != null) {
-            if (t.klass.equals(klass) && t.text.equalsIgnoreCase(text))
-                break;
+        while ((currToken != null) 
+                && (!currToken.match(desiredKlass, desiredText))) {
 
-            t = t.next;
+            currToken = currToken.next;
         }
 
-        return t;
+        return currToken;
     }
 
     /**
@@ -175,15 +179,13 @@ public class Indent {
     * @param start prni token, kde se ma menit hodnota <code>col</code>
     * @param delta o kolik se ma zmenit hodnota <code>col</code>
     */
-    static void changeColUntilEOL(Token start, int delta) {
-        Token t = start;
+    static void changeColUntilEOL(Token startToken, int delta) {
+        Token currToken = startToken;
 
-        while (t != null) {
-            if (t.row != start.row)
-                break;
+        while ((currToken != null) && (currToken.row == startToken.row)) {
+            currToken.col += delta;
 
-            t.col += delta;
-            t = t.next;
+            currToken = currToken.next;
         }
     }
 
@@ -194,12 +196,11 @@ public class Indent {
     * @param start prni token, kde se ma menit hodnota <code>row</code>
     * @param delta o kolik se ma zmenit hodnota <code>row</code>
     */
-    static void changeRowUntilEOF(int delta, Token start) {
-        Token token = start;
+    static void changeRowUntilEOF(Token startToken, int delta) {
+        Token currToken;
 
-        while (token != null) {
-            token.row += delta;
-            token = token.next;
+        for (currToken = startToken; currToken != null; currToken = currToken.next) {
+            currToken.row += delta;
         }
     }
   
@@ -238,52 +239,53 @@ public class Indent {
     * @param l uroven, na kterou ma byt tato radka odsazena
     * @return token, kterym radka zacina po odsazeni (neni nutne stejny jako <code>start</code>)
     */
-    private static Token indentLine(Token start, int l) {
-        Token newToken, result;
+    private static Token indentLine(Token firstToken, int level) {
+        Token newToken;
+        Token result;
         String text;
         int delta = 0;
 
-        result = start;
+        result = firstToken;
 
-        if (start.klass.equals(KLASS_WHITESPACE)) {
-            if ((start.flags & Token.TF_ENDS_LINE) != Token.TF_ENDS_LINE) {
-                if (start.text.length() != l) {
-                    if (l > 0) {
-                        delta = l - start.text.length();
-                        start.text = "";
+        if (firstToken.isSameKlassAs(KLASS_WHITESPACE)) {
+            if (firstToken.hasFlag(Token.TF_ENDS_LINE)) {
+                if (firstToken.text.length() != level) {
+                    if (level > 0) {
+                        delta = level - firstToken.text.length();
+                        firstToken.text = "";
 
-                        for (int i = 1; i <= l; i++)
-                            start.text += " ";
+                        for (int i = 1; i <= level; i++)
+                            firstToken.text += " ";
 
-                        changeColUntilEOL(start.next, delta);
+                        changeColUntilEOL(firstToken.next, delta);
                     }
                     else {
-                        delta = -(int)start.text.length();
+                        delta = -(int)firstToken.text.length();
 
-                        if (start.prev != null)
-                            start.prev.next = start.next;
+                        if (firstToken.prev != null)
+                            firstToken.prev.next = firstToken.next;
 
-                        if (start.next != null)
-                            start.next.prev = start.prev;
+                        if (firstToken.next != null)
+                            firstToken.next.prev = firstToken.prev;
 
-                        start.next.flags |= Token.TF_BEGINS_LINE;
-                        changeColUntilEOL(start.next, delta);
-                        result = start.next;
+                        firstToken.next.flags |= Token.TF_BEGINS_LINE;
+                        changeColUntilEOL(firstToken.next, delta);
+                        result = firstToken.next;
                     }
                 }
             }
         }
-        else if (l > 0) {
+        else if (level > 0) {
             text = "";
-            for (int i = 1; i <= l; i++)
+            for (int i = 1; i <= level; i++)
             text += ' ';
-            int flags = (start.flags & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE;
-            newToken = new Token(text, KLASS_WHITESPACE, flags, start.row, start.col, start.prev, start);
-            changeColUntilEOL(start, l);
-            if (start.prev != null)
-                start.prev.next = newToken;
-            start.prev = newToken;
-            start.flags &= ~Token.TF_BEGINS_LINE;
+            int flags = (firstToken.flags & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE;
+            newToken = new Token(text, KLASS_WHITESPACE, flags, firstToken.row, firstToken.col, firstToken.prev, firstToken);
+            changeColUntilEOL(firstToken, level);
+            if (firstToken.prev != null)
+                firstToken.prev.next = newToken;
+            firstToken.prev = newToken;
+            firstToken.flags &= ~Token.TF_BEGINS_LINE;
         }
 
 	return result;
@@ -298,19 +300,19 @@ public class Indent {
         Token token, t, first;
 
         for (token = tokens; token != null; token = token.next)
-            if (token.klass.equals(KLASS_COMMENT)) {
+            if (token.isSameKlassAs(KLASS_COMMENT)) {
 
                 /* Nejdrive zjistime, zda je komentar standalone */
                 boolean isStandalone = true;
                 first = token;
-                if ((token.flags & Token.TF_BEGINS_LINE) != Token.TF_BEGINS_LINE) {
+                if ( ! token.hasFlag(Token.TF_BEGINS_LINE)) {
                     for (t = token.prev; t != null; t = t.prev)
-                        if (!t.klass.equals(KLASS_WHITESPACE)) {
+                        if (! t.isSameKlassAs(KLASS_WHITESPACE)) {
                             isStandalone = false;
                             break;
                         }
                         else {
-                            if ((t.flags & Token.TF_BEGINS_LINE) == Token.TF_BEGINS_LINE) {
+                            if (t.hasFlag(Token.TF_BEGINS_LINE)) {
                                 first = t;
                                 break;
                             }
@@ -319,7 +321,7 @@ public class Indent {
                 if (!isStandalone) continue;
 
                 /* Ted najdeme neco, k cemu by se mohl tento komentar vztahovat. */
-                for (t = token.next; t != null && (t.klass.equals(KLASS_COMMENT) || t.klass.equals(KLASS_WHITESPACE)); t = t.next)
+                for (t = token.next; t != null && (t.isSameKlassAs(KLASS_COMMENT) || t.isSameKlassAs(KLASS_WHITESPACE)); t = t.next)
                     ;
 
                 if (t == null || t.match(KLASS_RESERVED_WORD, "end")|| t.match(KLASS_RESERVED_WORD, "until"))
