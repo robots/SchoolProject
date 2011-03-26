@@ -245,53 +245,50 @@ public class Indent {
     * @param l uroven, na kterou ma byt tato radka odsazena
     * @return token, kterym radka zacina po odsazeni (neni nutne stejny jako <code>start</code>)
     */
-    private static Token indentLine(Token firstToken, int level) {
-        Token newToken;
-        Token result;
-        String text;
+    private static Token indentLine(Token leadingToken, int level) {
+        Token result = leadingToken;
         int delta = 0;
 
-        result = firstToken;
+        boolean leadEndsLine = leadingToken.hasFlag(Token.TF_ENDS_LINE);
+        boolean leadIsWhitesapce = leadingToken.isSameKlassAs(KLASS_WHITESPACE);
 
-        if (firstToken.isSameKlassAs(KLASS_WHITESPACE)) {
-            if (firstToken.hasFlag(Token.TF_ENDS_LINE)) {
-                if (firstToken.text.length() != level) {
-                    if (level > 0) {
-                        delta = level - firstToken.text.length();
-                        firstToken.text = "";
+        if (leadIsWhitesapce) {
+            if(!leadEndsLine && leadingToken.text.length() != level) {
 
-                        for (int i = 1; i <= level; i++)
-                            firstToken.text += " ";
+                if (level > 0) {
+                    delta = level - leadingToken.text.length();
 
-                        changeColUntilEOL(firstToken.next, delta);
-                    }
-                    else {
-                        delta = -(int)firstToken.text.length();
+                    leadingToken.text = createMultipleSpaces(level);
+                    changeColUntilEOL(leadingToken.next, delta);
+                }
+                else {
+                    delta = - leadingToken.text.length();
 
-                        if (firstToken.prev != null)
-                            firstToken.prev.next = firstToken.next;
+                    if (leadingToken.prev != null)
+                        leadingToken.prev.next = leadingToken.next;
 
-                        if (firstToken.next != null)
-                            firstToken.next.prev = firstToken.prev;
+                    if (leadingToken.next != null)
+                        leadingToken.next.prev = leadingToken.prev;
 
-                        firstToken.next.flags |= Token.TF_BEGINS_LINE;
-                        changeColUntilEOL(firstToken.next, delta);
-                        result = firstToken.next;
-                    }
+                    leadingToken.next.flags |= Token.TF_BEGINS_LINE;
+                    changeColUntilEOL(leadingToken.next, delta);
+                    result = leadingToken.next;
                 }
             }
         }
         else if (level > 0) {
-            text = "";
-            for (int i = 1; i <= level; i++)
-            text += ' ';
-            int flags = (firstToken.flags & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE;
-            newToken = new Token(text, KLASS_WHITESPACE, flags, firstToken.row, firstToken.col, firstToken.prev, firstToken);
-            changeColUntilEOL(firstToken, level);
-            if (firstToken.prev != null)
-                firstToken.prev.next = newToken;
-            firstToken.prev = newToken;
-            firstToken.flags &= ~Token.TF_BEGINS_LINE;
+
+            String text =  createMultipleSpaces(level);
+            int flags = (leadingToken.flags & ~Token.TF_ENDS_LINE) | Token.TF_BEGINS_LINE;
+            Token newToken = new Token(text, KLASS_WHITESPACE, flags, leadingToken.row, leadingToken.col, leadingToken.prev, leadingToken);
+
+            changeColUntilEOL(leadingToken, level);
+
+            if (leadingToken.prev != null)
+                leadingToken.prev.next = newToken;
+            
+            leadingToken.prev = newToken;
+            leadingToken.flags &= ~Token.TF_BEGINS_LINE;
         }
 
 	return result;
