@@ -299,38 +299,43 @@ public class Indent {
     *
     * @param tokens spojovy seznam tokenu, kde se maji najit a odsadit komentare
     */
-    static void indentComments(Token tokens) {
-        Token token, t, first;
-
-        for (token = tokens; token != null; token = token.next)
-            if (token.isSameKlassAs(KLASS_COMMENT)) {
+    static void indentComments(Token startingToken) {
+        Token currToken;
+        for (currToken = startingToken; currToken != null; currToken = currToken.next)
+            if (currToken.isSameKlassAs(KLASS_COMMENT)) {
 
                 /* Nejdrive zjistime, zda je komentar standalone */
                 boolean isStandalone = true;
-                first = token;
-                if ( ! token.hasFlag(Token.TF_BEGINS_LINE)) {
-                    for (t = token.prev; t != null; t = t.prev)
-                        if (! t.isSameKlassAs(KLASS_WHITESPACE)) {
+                Token firstToken = currToken;
+                if(!currToken.hasFlag(Token.TF_BEGINS_LINE)) {
+                    Token tok = currToken;
+
+                    do {
+                        tok = tok.prev;
+
+                        if(tok == null)
+                            break;
+
+                        if(!tok.isSameKlassAs(KLASS_WHITESPACE)) {
                             isStandalone = false;
                             break;
                         }
-                        else {
-                            if (t.hasFlag(Token.TF_BEGINS_LINE)) {
-                                first = t;
-                                break;
-                            }
-                        }
+
+                        firstToken = tok;
+                    }
+                    while(! tok.hasFlag(Token.TF_BEGINS_LINE));
                 }
+
                 if (!isStandalone) continue;
 
                 /* Ted najdeme neco, k cemu by se mohl tento komentar vztahovat. */
-                for (t = token.next; t != null && (t.isSameKlassAs(KLASS_COMMENT) || t.isSameKlassAs(KLASS_WHITESPACE)); t = t.next)
-                    ;
+                Token tokReferTo = Indent.skipWhitespaceAndComments(currToken.next);
 
-                if (t == null || t.match(KLASS_RESERVED_WORD, "end")|| t.match(KLASS_RESERVED_WORD, "until"))
-                    continue;
+                if ( tokReferTo != null
+                        && !tokReferTo.match(KLASS_RESERVED_WORD, "end")
+                        && tokReferTo.match(KLASS_RESERVED_WORD, "until"))
 
-                indentLine(first, t.col);
+                indentLine(firstToken, tokReferTo.col);
             }
        
      }
