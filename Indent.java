@@ -338,6 +338,16 @@ public class Indent {
        
      }
 
+    private static String createMultipleSpaces(int count){
+        StringBuilder outputBuffer = new StringBuilder(count);
+
+        for(int i = 0; i < count; ++i)
+            outputBuffer.append(" ");
+
+        return outputBuffer.toString();
+
+    }
+
     /** Trida popisujici jednu uroven odsazeni. Slouzi jako jedna polozka v zasobniku odsazeni. */
     private static final class IndentLvl {
 
