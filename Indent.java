@@ -99,11 +99,15 @@ class Token implements Cloneable {
 /** Zajistuje spravne odsazovani. */
 public class Indent {
 	public static final String NEWLINE = "\n";
+
 	public static final String KLASS_WHITESPACE = "whitespace";
 	public static final String KLASS_COMMENT = "comment";
 	public static final String KLASS_RESERVED_WORD = "reserved-word";
 	public static final String KLASS_VIRTUAL_ROUND_BRACKET =
 	    "virtual-round-bracket";
+
+	public static final String RESERVED_WORD_END = "end";
+	public static final String RESERVED_WORD_UNTIL = "until";
 
 	/**
 	* Vrati <code>1</code> nebo <code>0</code> podle toho, jestli je dany
@@ -118,7 +122,7 @@ public class Indent {
 	*         <code>0</code> pokud je druh odsazeni virtualni
 	*/
 	private static int indentLevel(String klass) {
-		return klass.equals(KLASS_VIRTUAL_ROUND_BRACKET) ? 1 : 0;
+		return klass.equals(KLASS_VIRTUAL_ROUND_BRACKET);
 	}
 
 	/**
@@ -202,9 +206,7 @@ public class Indent {
 	* @param delta o kolik se ma zmenit hodnota <code>row</code>
 	*/
 	static void changeRowUntilEOF(Token startToken, int delta) {
-		Token currToken;
-
-		for (currToken = startToken; currToken != null;
+		for (Token currToken = startToken; currToken != null;
 		     currToken = currToken.next) {
 			currToken.row += delta;
 		}
@@ -261,7 +263,6 @@ public class Indent {
 	*/
 	private static Token indentLine(Token leadingToken, int level) {
 		Token result = leadingToken;
-		int delta = 0;
 
 		boolean leadEndsLine = leadingToken.hasFlag(Token.TF_ENDS_LINE);
 		boolean leadIsWhitesapce =
@@ -272,7 +273,7 @@ public class Indent {
 			    && leadingToken.text.length() != level) {
 
 				if (level > 0) {
-					delta =
+					int delta =
 					    level - leadingToken.text.length();
 
 					leadingToken.text =
@@ -280,7 +281,7 @@ public class Indent {
 					changeColUntilEOL(leadingToken.next,
 							  delta);
 				} else {
-					delta = -leadingToken.text.length();
+					int delta = -leadingToken.text.length();
 
 					if (leadingToken.prev != null)
 						leadingToken.prev.next =
@@ -327,9 +328,8 @@ public class Indent {
 	* odsadit komentare
 	*/
 	static void indentComments(Token startingToken) {
-		Token currToken;
-		for (currToken = startingToken; currToken != null;
-		     currToken = currToken.next)
+		for (Token currToken = startingToken; currToken != null;
+		     currToken = currToken.next) {
 			if (currToken.isSameKlassAs(KLASS_COMMENT)) {
 
 				/* Nejdrive zjistime, zda je
@@ -369,13 +369,13 @@ public class Indent {
 
 				if (tokReferTo != null
 				    && !tokReferTo.match(KLASS_RESERVED_WORD,
-							 "end")
+							RESERVED_WORD_END)
 				    && tokReferTo.match(KLASS_RESERVED_WORD,
-							"until"))
+							RESERVED_WORD_UNTIL))
 
 					indentLine(firstToken, tokReferTo.col);
 			}
-
+		}
 	}
 
 	private static String createMultipleSpaces(int count) {
@@ -412,6 +412,8 @@ public class Indent {
 	/** Minimalni uroven odsazeni na teto radce. */
 		public int minLevel;
 
+		private final static int indentMultiplier = 4;
+
 	/**
 	* Odebere polozku ze zasobniku <code>Indent</code>u.
 	*
@@ -424,7 +426,7 @@ public class Indent {
 
 			IndentLvl poped = top;
 			top = top.next;
-			currLevel -= indentLevel(poped.klass) * 4;
+			currLevel -= indentLevel(poped.klass) * indentMultiplier;
 
 			if (minLevel > currLevel)
 				minLevel = currLevel;
@@ -444,7 +446,7 @@ public class Indent {
 				indent.next = top;
 
 			top = indent;
-			currLevel += indentLevel(indent.klass) * 4;
+			currLevel += indentLevel(indent.klass) * indentMultiplier;
 		}
 
 	/**
