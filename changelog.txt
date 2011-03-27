@@ -1,0 +1,178 @@
+Changelog Michal Demin & Vladimir Fiklik
+
+Obecne zmeny 
+  - formatovani textu, odsazeni, odradkovani
+
+Trida Token:
+* Vytvoreni pomocnych metody
+  - public boolean isSameKlassAs(String desiredKlass)
+	Porovna, zda je Token stejne class jako parametr desiredClass
+	Ucelem teto metody je zapouzdrit nutnost pristupu k promenne klass
+	a porovnavani pres equals()
+
+  - public boolean hasFlag(int flag)
+	True, pokud token ma flagu flag. Zapouzdruje porovnavani flagu
+	a zkracuje zapis.
+
+* metoda match
+  - zmena nazvu parametru na vhodnejsi
+
+  - vyuziti pomocne metody isSameKlassAs
+
+  - vysunuti porovnani rovnosti textu do lokalni promenne pro 
+    	zvyseni citelnosti u prikazu return
+
+* Uvazovane, ale neprovedene zmeny
+  - Prejmenovani public promennych
+	Promenne se zdaji mit celkem sebevysvetlujici nazvy, bezne pouzivane
+
+  - Zmeny nazvu parametru v konstruktoru
+	Souvisi s rozhodnutim nemenit nazvy public promennych. Takto jsou 
+	parametry stejne jako nazvy public promennych, proto je zrejme
+	co ktery parametr znamena v kontextu vytvareneho objektu
+
+  - Vysunuti konstant pro flagy do vyctoveho typu
+	Jakozto s ciselnymi promennymi se s nimi lepe pracuje a prestoze
+	logicky by asi patrily do vyctoveho typu, v Jave by to toto bylo
+	trochu omezujici. Proto jsme se rozhodli, ze logicka soudrznost dana
+	stejnym prefixem TF_ a dodrzovanim jmenne konvence je dostatecna.
+
+Trida Indent:
+  - Vytvoreni staticke konstanty NEWLINE 
+	pro zvyseni prehlednosti
+
+  - Vytvoreni statickych konstant pro jednotlive zname hodnoty stringu klass
+	Lehce problematicka zalezitost. Logicky by tyto hodnoty patrily do
+	samostatneho vyctoveho typu. Ale zde vyvstava problem, ze uvnitr samotne
+	tridy se testuji pouze 4 mozne hodnoty. Co kdyz ale promenna klass,
+	ktera je public a tedy do ni lze pristupovat zvenci, ma i dalsi hodnoty,
+	ktere se sice neuvazuji uvnitr tridy samotne, ale pouziva je nejaka
+	dalsi trida? Pokud bychom pouzili vyctovy typ, pak by toto nebylo mozne.
+
+* vytvoreni pomocne metody createMultipleSpaces pro generovani
+	stringu s danym poctem mezer. Vzhledem k  viceremu vyskytu tohoto
+	problemu se vytvoreni metody jevi jako opodstatnene.
+
+
+* metoda indentLevel
+  - pouziti stringove konstanty a vhodnejsiho zpusobu porovnani stringu
+	pres equals.
+
+  - odstraneni zbytecneho ternarniho operatoru
+
+* metoda skipWhitespaceAndComments
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+  - vyuziti pomocne metody isSameClassAs
+
+  - vyuziti while cyklu misto for cyklu
+	While cyklus povazujeme v tomto pripade za logictejsi, nebot je z nej
+	lepe patrne, co se zde deje. Hlavicka rika "dokud je zkoumany token
+	whitespace nebo komentar" a v tele cyklu se rika "postupuj dale".
+
+* metoda skipUntil
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+  - vyuziti while cyklu misto for cyklu (z obdobnych duvodu jako u metody
+	skipWhitespaceAndComments)
+
+  - vyuziti metody match
+
+* metoda changeColUntilEOL
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+
+  - vyuziti while cyklu misto for cyklu 
+
+* metoda changeRowUntilEOF
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+* metoda ensureBlankLineAfter
+  - vysunuti podminek, za kterych funkce nic nedela na zacatek funkce
+
+  - vyuziti pomocne metody hasFlag
+
+  - zprehledneni hledani konce radku pomoci while cyklu
+
+  - eliminace zbytecne promenne hlpr
+
+  - eliminace nesmyslnych binarnich operaci s flagami
+
+  - omezeni doby platnosti lokalni promenne a presunuti jeji deklarace
+	az na misto, kde je potreba
+
+  - Zruseni obludneho pouziti konstrukce while + switch
+
+  - eliminace redundantnich testu na nullovost lokalnich promennych
+
+  - pouziti lokalni promenne flags pro zprehledneni tvorby noveho objektu
+
+* metoda indentLine
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+  - vyuziti pomocnych metod hasFlag, isSameKlassAs a createMultipleSpaces
+
+  - pouziti dodatecnych logickych promennych pro zprehledneni zapisu podminek
+
+  - omezeni doby platnosti lokalni promenne a presunuti jeji deklarace
+	az na misto, kde je potreba
+
+  - prepsani if-else podminek pro lepsi citelnost tela funkce
+	+ prevraceni podminek pro eliminaci vetvi typu
+	/* nic nedelej, uz mame hotovo */
+
+  - pouziti lokalni promenne flags pro zprehledneni tvorby noveho objektu
+
+* metoda indentComments
+  - zmena nazvu parametru na vhodnejsi
+
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+  - vyuziti pomocnych metod hasFlag, isSameKlassAs
+
+  - vyuziti metody skipWhitespaceAndComments
+
+  - prepsani zpusobu zjisteni, zda je komentar standalone za pouziti
+	do-while cyklu. Jeho ucel by se dal shrnout jako
+	"pokud je komentar standalone, vrat v promenne firstToken token
+	zacatku radky". Zde sice jde asi trochu o poruseni zasady o tom,
+	ze cyklus by mel delat pouze jednu vec, nicmene oba vystupy
+	(standalone a firstToken) spolu souvisi tak uzce, ze je podle nas
+	tento dvoji ucel obhajitelny.
+
+  - omezeni doby platnosti lokalni promenne a presunuti jeji deklarace
+	az na misto, kde je potreba
+
+  - vypusteni nepotrebnych lokalnich promenych
+
+Trida IndentLvl:
+*konstruktor 
+   - porovnani stringu pres equals()
+
+Trida IndentContext:
+*metoda pop
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+  - vysunuti testu predpokladu na zacatek funkce
+
+*metoda push
+  - prevedeni if-else podminky na inicializaci + pripadne doplneni
+
+*metoda ident
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+*metoda unindentNext
+  - zmena nazvu lokalni promenne na vhodnejsi
+
+*metoda topClassIs
+  - prevedeni ternarniho operatoru pro zprehledneni
