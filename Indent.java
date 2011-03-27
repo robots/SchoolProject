@@ -122,7 +122,7 @@ public class Indent {
 	*         <code>0</code> pokud je druh odsazeni virtualni
 	*/
 	private static int indentLevel(String klass) {
-		return klass.equals(KLASS_VIRTUAL_ROUND_BRACKET);
+		return klass.equals(KLASS_VIRTUAL_ROUND_BRACKET) ? 1 : 0;
 	}
 
 	/**
