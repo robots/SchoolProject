@@ -3,7 +3,12 @@ Changelog Michal Demin & Vladimir Fiklik
 Obecne zmeny 
   - formatovani textu, odsazeni, odradkovani
 
+
+
 Trida Token:
+* Seskupeni souvisejicich veci
+  - metody prislusici tride u sebe, vnorene tridy az za nimi
+
 * Vytvoreni pomocnych metody
   - public boolean isSameKlassAs(String desiredKlass)
 	Porovna, zda je Token stejne class jako parametr desiredClass
@@ -57,8 +62,6 @@ Trida Indent:
 * metoda indentLevel
   - pouziti stringove konstanty a vhodnejsiho zpusobu porovnani stringu
 	pres equals.
-
-  - odstraneni zbytecneho ternarniho operatoru
 
 * metoda skipWhitespaceAndComments
   - zmena nazvu parametru na vhodnejsi
